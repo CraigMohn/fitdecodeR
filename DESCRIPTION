@@ -1,0 +1,17 @@
+Package: fitdecodeR
+Type: Package
+Title: Read Garmin FIT Files
+Version: 0.1.0
+Date: 2019-12-28
+Author: Craig Mohn
+Maintainer: Craig Mohn <craig.mohn.projects@gmail.com>
+Depends: R (>= 3.3)
+Imports: reticulate, lubridate, tibble 
+Description: R function which runs the python package fitdecode to
+    read a Garmin .fit file and return the results as 4 dataframes
+    containing the session summary data, the data records from the
+    activity, hrv data, and the device events.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.0
