@@ -7,6 +7,8 @@
 #' @param fitfilename name (including file path) of .fit file
 #' @param appendSessionUnits if FALSE, do not append units to variable names
 #'   in session dataframe
+#' @param frames a vector of frames to return from 
+#'   c("records","session","events","hrv")
 #' @param checkconda logical, check conda environment for packages
 #' @param requiredVars vector of variable names which will be generated as NA
 #'   if they are not already in the fit data records
@@ -17,6 +19,7 @@
 #' @export
 decode_fit_dfs <- function(fitfilename,
                            appendSessionUnits=TRUE,
+                           frames=c("records","session","events"),
                            checkconda=TRUE,
                            requiredVars) {
 
@@ -29,23 +32,39 @@ decode_fit_dfs <- function(fitfilename,
                    "decodefitfile.py", sep = "/")
   reticulate::source_python(pyfuncs, convert = TRUE)
 
-  session <- listofcols_to_tibble(
-    message_df(fitfilename, outfile = NULL, msgtype = "session",
-               appendunits = appendSessionUnits, fromR = TRUE, missing="keep"),
-    tuples="fixed")
-  events <- listofcols_to_tibble(
-    message_df(fitfilename, outfile = NULL, msgtype = "event",
-               appendunits = TRUE, fromR = TRUE),
-    tuples="drop")
-  records <- listofcols_to_tibble(
+  if ("session" %in% frames) {
+    session <- listofcols_to_tibble(
+      message_df(fitfilename, outfile = NULL, msgtype = "session",
+                 appendunits = appendSessionUnits, fromR = TRUE, missing="keep"),
+      tuples="fixed")
+  } else {
+    session <- NA
+  }
+  if ("session" %in% frames) {
+    events <- listofcols_to_tibble(
+      message_df(fitfilename, outfile = NULL, msgtype = "event",
+                 appendunits = TRUE, fromR = TRUE),
+      tuples="drop")
+  } else {
+    events <- NA
+  }
+  if ("records" %in% frames) {
+    records <- listofcols_to_tibble(
       message_df(fitfilename, outfile = NULL, 
                  appendunits = TRUE, fromR = TRUE, missing="keep"),
       tuples="fixed")
-  hrv <- expand_tuple_to_tibble(
+  } else {
+    records <- NA
+  }
+  if ("records" %in% frames) {
+    hrv <- expand_tuple_to_tibble(
       message_df(fitfilename, outfile = NULL, msgtype = "hrv",
                  addlasttimestamp=TRUE, 
                  appendunits = TRUE, fromR = TRUE))
-             
+  } else {
+    hrv <- NA
+  }
+  
   if (!missing(requiredVars)) records <- addVars(records,requiredVars)
 
 #session <<- session
@@ -136,7 +155,7 @@ addVars <- function(df,varlist)  {
 set_fitdecode_conda <- function()  {
   message("checking conda ")
   reticulate::use_condaenv("r-fitdecode", required = TRUE)
-  # reticulate::py_install(c("pandas", "fitdecode"),pip=FALSE)
+  #reticulate::py_install(c("pandas", "fitdecode"),pip=FALSE)
   message("done checking conda")
   invisible()
 }

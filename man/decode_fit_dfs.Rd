@@ -7,6 +7,7 @@
 decode_fit_dfs(
   fitfilename,
   appendSessionUnits = TRUE,
+  frames = c("records", "session", "events"),
   checkconda = TRUE,
   requiredVars
 )
@@ -16,6 +17,9 @@ decode_fit_dfs(
 
 \item{appendSessionUnits}{if FALSE, do not append units to variable names
 in session dataframe}
+
+\item{frames}{a vector of frames to return from 
+c("records","session","events","hrv")}
 
 \item{checkconda}{logical, check conda environment for packages}
 

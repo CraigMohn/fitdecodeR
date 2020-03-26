@@ -1,7 +1,7 @@
 Package: fitdecodeR
 Type: Package
 Title: Read Garmin FIT Files
-Version: 0.1.0
+Version: 0.1.5
 Date: 2019-12-28
 Author: Craig Mohn
 Maintainer: Craig Mohn <craig.mohn.projects@gmail.com>

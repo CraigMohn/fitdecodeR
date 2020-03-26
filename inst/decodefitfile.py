@@ -42,7 +42,6 @@ def message_df(fitfile=None,
                     # Go through all the data entries in this msg
                     for fld in frame.fields:
                         if fld.units and appendunits:
-                            
                             keyname = fld.name + "." + fld.units.replace("/",".")
                         else:
                             keyname = fld.name
@@ -50,9 +49,7 @@ def message_df(fitfile=None,
                         msgdict[keyname] = frame.get_value(fld.name,fallback=float('NaN'))
 
                     msgdf = msgdf.append(msgdict,ignore_index=True)
-                    #for fff in frame.fields:   
-                    #    print("  ",fff.name," = ",fff.value)  
-                        
+
     msgdf = msgdf.where((pd.notnull(msgdf)), None)
     if missing == 'drop':
         msgdf.dropna(axis=1,how='all',inplace=True)
