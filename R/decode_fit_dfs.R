@@ -27,40 +27,41 @@ decode_fit_dfs <- function(fitfilename,
     set_fitdecode_conda()
     options(list(fitdecodeR.conda.checked = TRUE))
   }
-  reticulate::use_condaenv("r-fitdecode", required = TRUE)
+  #reticulate::use_condaenv("r-fitdecode", required = TRUE)
   pyfuncs <- paste(system.file(package = "fitdecodeR"),
                    "decodefitfile.py", sep = "/")
-  reticulate::source_python(pyfuncs, convert = TRUE)
+  suppressWarnings(reticulate::source_python(pyfuncs, convert = TRUE))
 
   if ("session" %in% frames) {
-    session <- listofcols_to_tibble(
+    session <- listofcols_to_tibble(suppressWarnings(
       message_df(fitfilename, outfile = NULL, msgtype = "session",
-                 appendunits = appendSessionUnits, fromR = TRUE, missing="keep"),
+                 appendunits = appendSessionUnits, fromR = TRUE, missing="keep")),
       tuples="fixed")
+    if (nrow(session) != 1) stop(paste0("session dataframe error, nrows=",nrow(session)))
   } else {
     session <- NA
   }
-  if ("session" %in% frames) {
-    events <- listofcols_to_tibble(
+  if ("events" %in% frames) {
+    events <- listofcols_to_tibble(suppressWarnings(
       message_df(fitfilename, outfile = NULL, msgtype = "event",
-                 appendunits = TRUE, fromR = TRUE),
+                 appendunits = TRUE, fromR = TRUE)),
       tuples="drop")
   } else {
     events <- NA
   }
   if ("records" %in% frames) {
-    records <- listofcols_to_tibble(
+    records <- listofcols_to_tibble(suppressWarnings(
       message_df(fitfilename, outfile = NULL, 
-                 appendunits = TRUE, fromR = TRUE, missing="keep"),
+                 appendunits = TRUE, fromR = TRUE, missing="keep")),
       tuples="fixed")
   } else {
     records <- NA
   }
-  if ("records" %in% frames) {
-    hrv <- expand_tuple_to_tibble(
+  if ("hrv" %in% frames) {
+    hrv <- expand_tuple_to_tibble(suppressWarnings(
       message_df(fitfilename, outfile = NULL, msgtype = "hrv",
                  addlasttimestamp=TRUE, 
-                 appendunits = TRUE, fromR = TRUE))
+                 appendunits = TRUE, fromR = TRUE)))
   } else {
     hrv <- NA
   }
@@ -71,8 +72,6 @@ decode_fit_dfs <- function(fitfilename,
 #records <<- records
 #events <<- events
 #hrv <<- hrv
-
-  if (nrow(session) != 1) stop(paste0("session dataframe error, nrows=",nrow(session)))
 
   return(list(session = session, records = records, events = events, hrv = hrv))
 }
@@ -156,6 +155,9 @@ set_fitdecode_conda <- function()  {
   message("checking conda ")
   reticulate::use_condaenv("r-fitdecode", required = TRUE)
   #reticulate::py_install(c("pandas", "fitdecode"),pip=FALSE)
+  #pyfuncs <- paste(system.file(package = "fitdecodeR"),
+  #                 "decodefitfile.py", sep = "/")
+  #reticulate::source_python(pyfuncs, convert = TRUE)
   message("done checking conda")
   invisible()
 }
