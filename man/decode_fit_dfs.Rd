@@ -7,7 +7,7 @@
 decode_fit_dfs(
   fitfilename,
   appendSessionUnits = TRUE,
-  frames = c("records", "session", "events"),
+  frames = c("records", "session", "events", "device_info"),
   checkconda = TRUE,
   requiredVars
 )
@@ -19,7 +19,7 @@ decode_fit_dfs(
 in session dataframe}
 
 \item{frames}{a vector of frames to return from 
-c("records","session","events","hrv")}
+c("records","session","events","hrv","device_info")}
 
 \item{checkconda}{logical, check conda environment for packages}
 

@@ -4,9 +4,6 @@ import fitdecode
 import sys
 import pandas as pd
 
-src_file = "c:\\test\\2019-11-09-12-30-38.fit"
-
-
 def message_df(fitfile=None,
                msgtype='record',
                outfile=None,
@@ -14,6 +11,9 @@ def message_df(fitfile=None,
                missing='drop',
                addlasttimestamp=False,
                fromR=False)  :
+                   
+    #  serial number has numpy/pandas conversion problems                   
+    baddevinfovars = ['serial_number']
 
     if fitfile is None:
         print ("No fitfile given")
@@ -46,14 +46,18 @@ def message_df(fitfile=None,
                         else:
                             keyname = fld.name
  
-                        msgdict[keyname] = frame.get_value(fld.name,fallback=float('NaN'))
-
+                        if (msgtype == 'device_info') and (fld.name in baddevinfovars):
+                            msgdict[keyname] = force_to_int(frame.get_value(fld.name,
+                                                               fallback=float('NaN')))
+                        else:
+                            msgdict[keyname] = frame.get_value(fld.name,
+                                                               fallback=float('NaN'))
+   
                     msgdf = msgdf.append(msgdict,ignore_index=True)
 
     msgdf = msgdf.where((pd.notnull(msgdf)), None)
     if missing == 'drop':
         msgdf.dropna(axis=1,how='all',inplace=True)
-                        
                 
     if not fromR :
         print("variables extracted:")
@@ -66,4 +70,10 @@ def message_df(fitfile=None,
     else:
          msgdf.to_json(path_or_buf=outfile,date_format='iso',
                        date_unit='s')
-                   
+
+
+def force_to_int(value):
+    try:
+        return int(value)
+    except:
+        return -99999

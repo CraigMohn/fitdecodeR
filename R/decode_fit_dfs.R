@@ -8,7 +8,7 @@
 #' @param appendSessionUnits if FALSE, do not append units to variable names
 #'   in session dataframe
 #' @param frames a vector of frames to return from 
-#'   c("records","session","events","hrv")
+#'   c("records","session","events","hrv","device_info")
 #' @param checkconda logical, check conda environment for packages
 #' @param requiredVars vector of variable names which will be generated as NA
 #'   if they are not already in the fit data records
@@ -19,7 +19,7 @@
 #' @export
 decode_fit_dfs <- function(fitfilename,
                            appendSessionUnits=TRUE,
-                           frames=c("records","session","events"),
+                           frames=c("records","session","events","device_info"),
                            checkconda=TRUE,
                            requiredVars) {
 
@@ -27,10 +27,9 @@ decode_fit_dfs <- function(fitfilename,
     set_fitdecode_conda()
     options(list(fitdecodeR.conda.checked = TRUE))
   }
-  #reticulate::use_condaenv("r-fitdecode", required = TRUE)
   pyfuncs <- paste(system.file(package = "fitdecodeR"),
                    "decodefitfile.py", sep = "/")
-  suppressWarnings(reticulate::source_python(pyfuncs, convert = TRUE))
+  reticulate::source_python(pyfuncs, convert = TRUE)
 
   if ("session" %in% frames) {
     session <- listofcols_to_tibble(suppressWarnings(
@@ -65,6 +64,13 @@ decode_fit_dfs <- function(fitfilename,
   } else {
     hrv <- NA
   }
+  if ("device_info" %in% frames) {
+      device_info <- listofcols_to_tibble(
+      message_df(fitfilename, outfile = NULL, msgtype = "device_info",
+                 appendunits = TRUE, fromR = TRUE, missing="keep"))
+  } else {
+    device_info <- NA
+  }
   
   if (!missing(requiredVars)) records <- addVars(records,requiredVars)
 
@@ -72,8 +78,10 @@ decode_fit_dfs <- function(fitfilename,
 #records <<- records
 #events <<- events
 #hrv <<- hrv
+#device_info <<- device_info
 
-  return(list(session = session, records = records, events = events, hrv = hrv))
+  return(list(session = session, records = records, events = events, 
+              hrv = hrv, device_info = device_info))
 }
 
 listofcols_to_tibble <- function(listofcolumns, tuples="fixed")  {
@@ -154,6 +162,8 @@ addVars <- function(df,varlist)  {
 set_fitdecode_conda <- function()  {
   message("checking conda ")
   reticulate::use_condaenv("r-fitdecode", required = TRUE)
+  # some versions of reticulate fail on first call, do it here silently
+  try(reticulate::import("sys"),silent=TRUE) 
   #reticulate::py_install(c("pandas", "fitdecode"),pip=FALSE)
   #pyfuncs <- paste(system.file(package = "fitdecodeR"),
   #                 "decodefitfile.py", sep = "/")
