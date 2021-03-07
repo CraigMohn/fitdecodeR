@@ -163,7 +163,7 @@ set_fitdecode_conda <- function()  {
   message("checking conda ")
   reticulate::use_condaenv("r-fitdecode", required = TRUE)
   # some versions of reticulate fail on first call, do it here silently
-  try(reticulate::import("sys"),silent=TRUE) 
+  junk <- try(reticulate::import("sys"),silent=TRUE) 
   #reticulate::py_install(c("pandas", "fitdecode"),pip=FALSE)
   #pyfuncs <- paste(system.file(package = "fitdecodeR"),
   #                 "decodefitfile.py", sep = "/")
