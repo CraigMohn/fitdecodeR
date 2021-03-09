@@ -36,6 +36,8 @@ decode_fit_dfs <- function(fitfilename,
       message_df(fitfilename, outfile = NULL, msgtype = "session",
                  appendunits = appendSessionUnits, fromR = TRUE, missing="keep")),
       tuples="fixed")
+    if ("left_right_balance" %in% names(session)) 
+      session$left_right_balance <- rightPedalShare(session$left_right_balance)*100
     if (nrow(session) != 1) stop(paste0("session dataframe error, nrows=",nrow(session)))
   } else {
     session <- NA
@@ -170,4 +172,21 @@ set_fitdecode_conda <- function()  {
   #reticulate::source_python(pyfuncs, convert = TRUE)
   message("done checking conda")
   invisible()
+}
+
+rightPedalShare <- function(l_r_b) {
+  if (is.na(l_r_b)) {
+    rps <- NA
+  } else if (l_r_b >= 256) {
+    # pedal is known to be right if 1st bit set ( l_r_b & 8000H )
+    # ignore top 2 bits ( l_r_b & 3FFF ) and shift 4 decimal places
+    rps <- bitwAnd(as.integer(l_r_b),16383L) / 10000
+  } else if (l_r_b < 256 & l_r_b >= 128) {
+    #  single byte data, top bit means right pedal ( l_r_b & 7FH )
+    rps <- bitwAnd(as.integer(l_r_b),63L) / 100
+  } else {
+    # otherwise not sure which pedal is described
+    rps <- NA
+  }
+  return(rps)
 }
